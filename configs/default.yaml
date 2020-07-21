@@ -1,0 +1,22 @@
+seed: 42
+n_splits: 5
+num_workers: 4
+batch_size: 16
+n_epochs: 25
+lr: 0.001
+verbose: true
+verbose_step: 1
+step_scheduler: false
+validation_scheduler: true
+num_classes: 1
+image_size: 512
+scheduler_params:
+  mode: min
+  factor: 0.5
+  patience: 1
+  verbose: false
+  threshold: 0.0001
+  threshold_mode: abs
+  cooldown: 0
+  min_lr: 1e-8
+  eps: 1e-08
