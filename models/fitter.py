@@ -3,6 +3,7 @@ import os
 import time
 from glob import glob
 from datetime import datetime
+from dataclasses import asdict
 
 import torch
 
@@ -16,11 +17,11 @@ class Fitter:
         self.config = config
         self.epoch = 0
 
-        self.base_dir = f'./{config.folder}'
+        self.base_dir = f"logs/{config.id}"
         if not os.path.exists(self.base_dir):
             os.makedirs(self.base_dir)
 
-        self.log_path = f'{self.base_dir}/log.txt'
+        self.log_path = f"{self.base_dir}/log.txt"
         self.best_summary_loss = 10 ** 5
 
         self.model = model
@@ -34,7 +35,7 @@ class Fitter:
         ]
 
         self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=config.lr)
-        self.scheduler = config.SchedulerClass(self.optimizer, **config.scheduler_params)
+        self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, **asdict(config.scheduler_params))
         self.log(f'Fitter prepared. Device is {self.device}')
 
     def fit(self, train_loader, validation_loader):

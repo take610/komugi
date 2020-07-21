@@ -25,7 +25,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", default="./configs/default.yaml", type=str)
-    parser.add_argument("--data", default="../input/global-wheat-detection", type=str)
+    parser.add_argument("--config", default="configs/default.yaml", type=str)
+    parser.add_argument("--data", default="data/input/global-wheat-detection", type=str)
     args = parser.parse_args()
     main(args)
