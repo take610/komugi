@@ -6,6 +6,7 @@ from datetime import datetime
 from dataclasses import asdict
 
 import torch
+from tqdm import tqdm
 
 from utils.utils import AverageMeter
 
@@ -87,8 +88,16 @@ class Fitter:
                 images = images.to(self.device).float()
                 boxes = [target['boxes'].to(self.device).float() for target in targets]
                 labels = [target['labels'].to(self.device).float() for target in targets]
-
-                loss, _, _ = self.model(images, boxes, labels)
+                boxes = [target['boxes'].to(self.device).float() for target in targets]
+                labels = [target['labels'].to(self.device).float() for target in targets]
+                target_res = {}
+                target_res['bbox'] = boxes
+                target_res['cls'] = labels
+                target_res["img_scale"] = torch.tensor([1.0] * batch_size, dtype=torch.float).to(self.device)
+                target_res["img_size"] = torch.tensor([images[0].shape[-2:]] * batch_size, dtype=torch.float).to(
+                    self.device)
+                outputs = self.model(images, target_res)
+                loss = outputs['loss']
                 summary_loss.update(loss.detach().item(), batch_size)
 
         return summary_loss
@@ -97,7 +106,7 @@ class Fitter:
         self.model.train()
         summary_loss = AverageMeter()
         t = time.time()
-        for step, (images, targets, image_ids) in enumerate(train_loader):
+        for step, (images, targets, image_ids) in tqdm(enumerate(train_loader)):
             if self.config.verbose:
                 if step % self.config.verbose_step == 0:
                     print(
@@ -109,13 +118,18 @@ class Fitter:
             images = torch.stack(images)
             images = images.to(self.device).float()
             batch_size = images.shape[0]
+            target_res = {}
+
             boxes = [target['boxes'].to(self.device).float() for target in targets]
             labels = [target['labels'].to(self.device).float() for target in targets]
 
+            target_res['bbox'] = boxes
+            target_res['cls'] = labels
+
             self.optimizer.zero_grad()
 
-            loss, _, _ = self.model(images, boxes, labels)
-
+            outputs = self.model(images, target_res)
+            loss = outputs['loss']
             loss.backward()
 
             summary_loss.update(loss.detach().item(), batch_size)
@@ -144,6 +158,7 @@ class Fitter:
         self.scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
         self.best_summary_loss = checkpoint['best_summary_loss']
         self.epoch = checkpoint['epoch'] + 1
+
 
     def log(self, message):
         if self.config.verbose:

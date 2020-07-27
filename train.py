@@ -1,6 +1,8 @@
 import argparse
 
 import torch
+import numpy as np
+
 from models.networks.efficient_det_5 import get_net
 from models.fitter import Fitter
 from scripts.dataloder import get_dataloader

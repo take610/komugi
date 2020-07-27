@@ -80,6 +80,4 @@ class Config(YamlConfig):
     verbose_step: int
     step_scheduler: bool
     validation_scheduler: bool
-    num_classes: int
-    image_size: int
     scheduler_params: SchedulerParams
